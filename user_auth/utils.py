@@ -6,6 +6,14 @@ import pyotp
 from .models import User,OneTimePassword
 import base64
 from django.conf import settings
+
+# GOAUTH
+from google.auth.transport.requests import Request
+from google.oauth2 import id_token
+from .models import User
+from django.contrib.auth import authenticate
+from rest_framework.exceptions import AuthenticationFailed
+
 # generate
 class generateKey:
     @staticmethod
@@ -40,7 +48,7 @@ def send_code_otp(email):
     email_body = f'Hi {email}, Use the code {otp_code} to activate {current_site} your account'
     from_email=settings.DEFAULT_FROM_EMAIL
     send_email=EmailMessage(subject,email_body,from_email,[email])
-    send_email.send(fail_silently=False)
+    send_email.send(fail_silently=True)
 def verify_otp(email,otp):
     try:
         user = User.objects.get(email=email)
@@ -63,3 +71,59 @@ def verify_otp(email,otp):
         return True
     else:
         return False
+def send_transactional_email(data):
+    subject=data['email_subject']
+    email_body=data['email_body']
+    from_email=settings.DEFAULT_FROM_EMAIL
+    send_email=EmailMessage(subject,email_body,from_email,to=[data['to_email']])
+    send_email.send(fail_silently=False)
+    
+
+
+
+class Google():
+    @staticmethod
+    def validate(access_token):
+        try:
+            id_info=id_token.verify_oauth2_token(access_token,Request())
+
+            return id_info
+        
+        except Exception as e:
+            return "token expired or invalid"
+        
+def loginUser(email,password):
+    login_user = authenticate(email=email, password=password)
+    if login_user is not None:
+        user_tokens=login_user.tokens()
+        return {
+            'email':login_user.email,
+            'name':login_user.first_name,
+            'access':user_tokens.get('access'),
+            'refresh':user_tokens.get('refresh')    
+        }
+    else:
+        raise AuthenticationFailed('Invalid credentials')
+
+def registerUser(provider,email,first_name,last_name):
+        user = User.objects.filter(email=email)
+        if user.exists():
+            if provider == user[0].auth_provider:
+                auth_user=loginUser(email,password=settings.SOCIAL_AUTH_PWD)
+                return auth_user
+            else:
+                raise AuthenticationFailed('Please continue your login using ' + user[0].auth_provider)
+        else:
+            newUser={
+                'email':email,
+                'first_name':first_name,
+                'last_name':last_name,
+                'auth_provider':provider,    
+            }
+            
+            reg_user=User.objects.create(**newUser)
+            reg_user.set_password(settings.SOCIAL_AUTH_PWD)
+            reg_user.is_verified=True
+            reg_user.save()
+            auth_user=loginUser(email,password=settings.SOCIAL_AUTH_PWD)
+            return auth_user

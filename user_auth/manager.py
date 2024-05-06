@@ -19,8 +19,11 @@ class UserManager(BaseUserManager):
             raise ValueError("The first name must be set")
         if not last_name:
             raise ValueError("The last name must be set")
-        user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
-        user.set_password(password)
+        user = self.model(email=email, first_name=first_name, last_name=last_name **extra_fields)
+        if password:
+            user.set_password(password)  # Hash the password
+        else:
+            user.set_unusable_password()  # Ensure a password is set
         user.save(using=self._db)
         return user
     def create_superuser(self, email, password,first_name, last_name, **extra_fields):
