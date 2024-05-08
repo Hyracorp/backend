@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'admin_panel',
     'property_management',
     'user_auth',
-    'user_profile' 
+    'user_profile'
 ]
 
 MIDDLEWARE = [
@@ -58,7 +58,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -66,7 +65,7 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
 
 AUTH_USER_MODEL = 'user_auth.User'
 REST_FRAMEWORK = {
-    'NON_FIELD_ERRORS_KEY':'errors',
+    'NON_FIELD_ERRORS_KEY' : 'errors',
     'DEFAULT_AUTHENTICATION_CLASSES': (
 
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -74,27 +73,25 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     )
-   
 }
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "AUTH_HEADER_TYPES": ("Bearer",),
     "SIGNING_KEY": SECRET_KEY,
-      # custom
+    # custom
     'AUTH_COOKIE': 'refresh_token',  # Cookie name. Enables cookies if value is set.
     'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
     'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
     'AUTH_COOKIE_HTTP_ONLY': True,  # Http only cookie flag.It's not fetch by javascript.
     'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
     'AUTH_COOKIE_SAMESITE': 'None',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
-    
 }
 SESSION_COOKIE_SECURE = True
 
 GOOGLE_OAUTH2_CLIENT_ID = env('GAUTH_CLIENT_ID')
 GOOGLE_OAUTH2_CLIENT_SECRET = env('GAUTH_SECRET')
-SOCIAL_AUTH_PWD=env('SOCIAL_AUTH_PWD')
+SOCIAL_AUTH_PWD = env('SOCIAL_AUTH_PWD')
 
 ROOT_URLCONF = 'hyracorpbackend.urls'
 
@@ -177,10 +174,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST=env('EMAIL_HOST')
-EMAIL_HOST_USER=env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD=env('EMAIL_HOST_PASSWORD')
-EMAIL_PORT=env('EMAIL_PORT')
-EMAIL_USE_TLS=True
-DEFAULT_FROM_EMAIL=env('DEFAULT_FROM_EMAIL')
-
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')

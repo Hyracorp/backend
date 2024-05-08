@@ -1,0 +1,13 @@
+[flake8]
+max-line-length = 255
+extend-ignore = E203
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    old,
+    build,
+    dist
+    env/
+max-complexity = 10
+import-order-style = pep8
