@@ -22,6 +22,6 @@ services:
       - db
     restart: always
     env_file:
-      - .env.local
+      - .env
 volumes:
   data: {}
