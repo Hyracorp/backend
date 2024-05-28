@@ -34,5 +34,5 @@ jobs:
           docker context use remote
           docker image prune -f
           docker build -t hyracorp_backend .
-          docker-compose --context remote -f docker-compose.yaml down
-          docker-compose --context remote -f docker-compose.yaml up -d
+          docker-compose --context remote -f docker-compose.yml down
+          docker-compose --context remote -f docker-compose.yml up -d
