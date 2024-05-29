@@ -23,6 +23,5 @@ services:
     restart: always
     env_file:
       - .env
-    entrypoint: /code/entrypoint.sh
 volumes:
   data: {}

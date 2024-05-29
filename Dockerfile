@@ -17,10 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # copy project
 COPY . /code/
 
-COPY entrypoint.sh /code/entrypoint.sh
-RUN chmod +x /code/entrypoint.sh
-
-# Debugging step
-RUN ls -l /code
+# setup entrypoint
+COPY ./entrypoint.sh /code/
 
 ENTRYPOINT ["/code/entrypoint.sh"]
