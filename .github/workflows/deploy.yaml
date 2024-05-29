@@ -35,5 +35,5 @@ jobs:
       - name: Docker Compose Up
         run: |
           docker-compose --context remote -f docker-compose.yml down
-          docker image prune -f
-          docker-compose --context remote -f docker-compose.yml --env-file ./.env up -d --force-recreate --build
+          docker-compose --context remote build --no-cache
+          docker-compose --context remote -f docker-compose.yml --env-file ./.env up -d --force-recreate
