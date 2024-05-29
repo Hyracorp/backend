@@ -15,8 +15,7 @@ services:
     build: .
     command: >
       sh -c "
-        ls &&
-        cd /code &&
+        pwd &&
         sleep 2 &&
         python manage.py migrate --no-input &&
         python manage.py createcachetable &&
