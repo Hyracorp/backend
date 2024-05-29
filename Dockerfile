@@ -4,17 +4,23 @@ FROM python:3.10-alpine
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+# Install system dependencies
+RUN apk add --no-cache gcc musl-dev libffi-dev
+
 # set work directory
 WORKDIR /code
 
 # install dependencies
 COPY requirements.txt /code/
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # copy project
 COPY . /code/
 
 COPY entrypoint.sh /code/entrypoint.sh
 RUN chmod +x /code/entrypoint.sh
+
+# Debugging step
+RUN ls -l /code
 
 ENTRYPOINT ["/code/entrypoint.sh"]
