@@ -35,4 +35,4 @@ jobs:
           docker image prune -f
           docker build . -t hyracorp:backend
           docker-compose --context remote -f docker-compose.yml down
-          docker-compose --context remote -f docker-compose.yml --env-file ./.env up -d --force-recreate
+          docker-compose --context remote -f docker-compose.yml --env-file ./.env up -d --force-recreate --build
