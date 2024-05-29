@@ -36,4 +36,4 @@ jobs:
           docker build . -t hyracorp:backend
           docker run --rm hyracorp:backend ls -l /code/entrypoint.sh
           docker-compose --context remote -f docker-compose.yml down
-          docker-compose --context remote -f docker-compose.yml up -d
+          docker-compose --context remote -f docker-compose-prod.yaml --env-file ./.env up -d --force-recreate
