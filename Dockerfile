@@ -18,6 +18,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /code/
 
 # setup entrypoint
-COPY ./entrypoint.sh /code/
-
+RUN ["chmod", "+755", "entrypoint.sh"]
 ENTRYPOINT ["/code/entrypoint.sh"]
