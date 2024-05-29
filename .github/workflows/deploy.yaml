@@ -30,6 +30,7 @@ jobs:
           encodedString: ${{ secrets.ENV }}
       - name: Remote Docker compose up
         run: |
+          ls -l
           docker context create remote --docker "host=ssh://${{secrets.SSH_USER}}@${{secrets.IP_HOST}}"
           docker context use remote
           docker image prune -f
