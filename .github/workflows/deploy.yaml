@@ -30,10 +30,10 @@ jobs:
           encodedString: ${{ secrets.ENV }}
       - name: Remote Docker compose up
         run: |
-          ls -l
           docker context create remote --docker "host=ssh://${{secrets.SSH_USER}}@${{secrets.IP_HOST}}"
           docker context use remote
           docker image prune -f
-          docker build -t hyracorp_backend .
+          docker build . -t hyracorp:backend
+          docker run --rm hyracorp:backend ls -l /code/entrypoint.sh
           docker-compose --context remote -f docker-compose.yml down
           docker-compose --context remote -f docker-compose.yml up -d
