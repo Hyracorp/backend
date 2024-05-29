@@ -15,8 +15,8 @@ services:
     build: .
     command: >
       sh -c "
-        pwd &&
         sleep 2 &&
+        ls -al /code &&
         python manage.py migrate --no-input &&
         python manage.py createcachetable &&
         if [ \"$DJANGO_SUPERUSER_USERNAME\" ]; then

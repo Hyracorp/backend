@@ -28,11 +28,12 @@ jobs:
         with:
           filePath: ${{github.workspace}}/.env
           encodedString: ${{ secrets.ENV }}
-      - name: Remote Docker compose up
+      - name: Set up Docker context
         run: |
-          docker context create remote --docker "host=ssh://${{secrets.SSH_USER}}@${{secrets.IP_HOST}}"
+          docker context create remote --docker "host=ssh://${{ secrets.SSH_USER }}@${{ secrets.IP_HOST }}"
           docker context use remote
-          docker image prune -f
-          docker build . -t hyracorp:backend
+      - name: Docker Compose Up
+        run: |
           docker-compose --context remote -f docker-compose.yml down
+          docker image prune -f
           docker-compose --context remote -f docker-compose.yml --env-file ./.env up -d --force-recreate --build
