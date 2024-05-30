@@ -23,7 +23,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - static:/code/static
+      - staticfiles:/code/staticfiles
 volumes:
   data: {}
-  static: {}
+  staticfiles: {}

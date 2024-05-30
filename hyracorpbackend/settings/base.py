@@ -115,6 +115,10 @@ WSGI_APPLICATION = "hyracorpbackend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+print(
+    env("DB_NAME"), env("DB_USER"), env("DB_PASSWORD"), env("DB_HOST"), env("DB_PORT")
+)
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
