@@ -36,5 +36,5 @@ jobs:
         run: |
           docker image prune -f
           docker build -t hyracop/backend:latest .
-          docker-compose --context remote -f docker-compose.yml down
+          docker-compose --context remote -f docker-compose.yml down --rmi=local
           docker-compose --context remote -f docker-compose.yml --env-file ./.env up -d --force-recreate
