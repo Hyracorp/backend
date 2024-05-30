@@ -26,3 +26,4 @@ services:
       - static:/code/static
 volumes:
   data: {}
+  static: {}
