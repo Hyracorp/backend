@@ -34,6 +34,7 @@ jobs:
           docker context use remote
       - name: Docker Compose Up
         run: |
+          docker image prune -f
+          docker build -t hyracop/backend:latest .
           docker-compose --context remote -f docker-compose.yml down
-          docker-compose --context remote build --no-cache
           docker-compose --context remote -f docker-compose.yml --env-file ./.env up -d --force-recreate

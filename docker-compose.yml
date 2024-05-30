@@ -11,28 +11,18 @@ services:
     volumes:
       - ./data/db:/var/lib/postgresql/data
     restart: always
-  web:
-    build: .
-    command: >
-      sh -c "
-        sleep 2 &&
-        ls -al /code &&
-        python manage.py migrate --no-input &&
-        python manage.py createcachetable &&
-        if [ \"$DJANGO_SUPERUSER_USERNAME\" ]; then
-          python manage.py createsuperuser --noinput --username \"$DJANGO_SUPERUSER_USERNAME\" --email $DJANGO_SUPERUSER_EMAIL;
-        fi &&
-        python manage.py collectstatic --noinput &&
-        gunicorn hyracorpbackend.wsgi:application --bind :8000
-      "
-    volumes:
-      - .:/code
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    restart: always
     env_file:
       - .env
+  web:
+    image:  hyracop/backend:latest
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+    volumes:
+      - static:/code/static
 volumes:
   data: {}

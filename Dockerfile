@@ -16,3 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # copy project
 COPY . /code/
+RUN "ls -l"
+RUN ["chmod", "755", "entrypoint.sh"]
+ENTRYPOINT ["/code/entrypoint.sh"]
