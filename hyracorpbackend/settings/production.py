@@ -48,49 +48,67 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 LOKI_URL = env("LOKI_URL")
-LOGLEVEL = "INFO"
 LOGGING_CONFIG = None
 
 
-class LokiFormatter(jsonlogger.JsonFormatter):
-    def add_fields(self, log_record, record, message_dict):
-        super().add_fields(log_record, record, message_dict)
-        log_record["source"] = "django-app"  # Optional: Specify a source label
-        log_record["version"] = "1.0"  # Optional: Specify a version label
+# class LokiFormatter(jsonlogger.JsonFormatter):
+#     def add_fields(self, log_record, record, message_dict):
+#         super().add_fields(log_record, record, message_dict)
+#         log_record["source"] = "django-app"  # Optional: Specify a source label
+#         log_record["version"] = "1.0"  # Optional: Specify a version label
 
 
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "loki": {
+#             "()": LokiFormatter,
+#         },
+#         "django.server": DEFAULT_LOGGING["formatters"]["django.server"],
+#     },
+#     "handlers": {
+#         "console": {
+#             "class": "logging.StreamHandler",
+#             "formatter": "loki",
+#         },
+#         "loki": {
+#             "class": "logging.handlers.HTTPHandler",
+#             "formatter": "loki",
+#             "url": LOKI_URL,
+#             "method": "POST",
+#         },
+#         "django.server": DEFAULT_LOGGING["handlers"]["django.server"],
+#     },
+#     "loggers": {
+#         "": {
+#             "level": LOGLEVEL,
+#             "handlers": ["console", "loki"],
+#         },
+#         "django.server": DEFAULT_LOGGING["loggers"]["django.server"],
+#     },
+# }
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "loki": {
-            "()": LokiFormatter,
-        },
-        "django.server": DEFAULT_LOGGING["formatters"]["django.server"],
-    },
     "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "loki",
-        },
         "loki": {
-            "class": "logging.handlers.HTTPHandler",
-            "formatter": "loki",
+            "level": "DEBUG",
+            "class": "django.utils.log.HttpHandler",
             "url": LOKI_URL,
             "method": "POST",
+            "labels": {"source": "hyracorp_backend"},  # Specify the source label
         },
-        "django.server": DEFAULT_LOGGING["handlers"]["django.server"],
     },
     "loggers": {
-        "": {
-            "level": LOGLEVEL,
-            "handlers": ["console", "loki"],
+        "django": {
+            "handlers": ["loki"],
+            "level": "DEBUG",
+            "propagate": True,
         },
-        "django.server": DEFAULT_LOGGING["loggers"]["django.server"],
     },
 }
 
-print(LOGGING)
 ALLOWED_HOSTS = [env("SERVER_DOMAIN"), env("SERVER_IP"), "0.0.0.0"]
 # temp testing config
 CORS_ALLOW_ALL_ORIGINS = True
