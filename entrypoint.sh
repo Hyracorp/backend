@@ -11,6 +11,6 @@ if [ "$DJANGO_SUPERUSER_USERNAME" ]; then
 fi
 
 python manage.py collectstatic --noinput
-gunicorn --log-config=python:LOGGING hyracorpbackend.wsgi:application --bind :8000
+gunicorn hyracorpbackend.wsgi:application --bind :8000
 
 exec "$@"
