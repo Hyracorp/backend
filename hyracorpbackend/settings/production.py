@@ -1,6 +1,8 @@
 import environ
 import os
 from pathlib import Path
+import logging
+from loguru import logger
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -49,60 +51,30 @@ LOKI_URL = env("LOKI_URL")
 LOGGING_CONFIG = None
 
 
-# class LokiFormatter(jsonlogger.JsonFormatter):
-#     def add_fields(self, log_record, record, message_dict):
-#         super().add_fields(log_record, record, message_dict)
-#         log_record["source"] = "django-app"  # Optional: Specify a source label
-#         log_record["version"] = "1.0"  # Optional: Specify a version label
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        logger_opt = logger.opt(depth=6, exception=record.exc_info)
+        logger_opt.log(record.levelname, record.getMessage())
 
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "loki": {
-#             "()": LokiFormatter,
-#         },
-#         "django.server": DEFAULT_LOGGING["formatters"]["django.server"],
-#     },
-#     "handlers": {
-#         "console": {
-#             "class": "logging.StreamHandler",
-#             "formatter": "loki",
-#         },
-#         "loki": {
-#             "class": "logging.handlers.HTTPHandler",
-#             "formatter": "loki",
-#             "url": LOKI_URL,
-#             "method": "POST",
-#         },
-#         "django.server": DEFAULT_LOGGING["handlers"]["django.server"],
-#     },
-#     "loggers": {
-#         "": {
-#             "level": LOGLEVEL,
-#             "handlers": ["console", "loki"],
-#         },
-#         "django.server": DEFAULT_LOGGING["loggers"]["django.server"],
-#     },
-# }
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
+        "default": {
+            "class": "logging.StreamHandler",
+        },
         "loki": {
-            "level": "DEBUG",
-            "class": "django.utils.log.HttpHandler",
+            "class": "logging_loki.LokiHandler",
             "url": LOKI_URL,
-            "method": "POST",
-            "labels": {"source": "hyracorp_backend"},  # Specify the source label
+            "tags": {"application": "hyracorp"},
+            "version": "1",
         },
     },
     "loggers": {
-        "django": {
-            "handlers": ["loki"],
+        "": {
+            "handlers": ["default", "loki"],
             "level": "DEBUG",
-            "propagate": True,
         },
     },
 }
