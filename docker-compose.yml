@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST: ${DB_HOST}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    restart: always
+    env_file:
+      - .env
+  web:
+    image:  hyracop/backend:latest
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+    volumes:
+      - staticfiles:/code/staticfiles
+volumes:
+  data: {}
+  staticfiles: {}

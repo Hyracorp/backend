@@ -11,6 +11,8 @@ django-filter==24.2
 djangorestframework==3.15.1
 djangorestframework-simplejwt==5.3.1
 exceptiongroup==1.2.1
+factory-boy==3.3.0
+Faker==25.2.0
 flake8==6.1.0
 flake8-django==1.4
 flake8-import-order==0.18.2
@@ -19,8 +21,10 @@ google-api-python-client==2.127.0
 google-auth==2.29.0
 google-auth-httplib2==0.2.0
 googleapis-common-protos==1.63.0
+gunicorn==22.0.0
 httplib2==0.22.0
 idna==3.7
+inflection==0.5.1
 iniconfig==2.0.0
 lazy-object-proxy==1.10.0
 Markdown==3.6
@@ -40,11 +44,16 @@ pyotp==2.9.0
 pyparsing==3.1.2
 pytest==8.2.0
 pytest-django==4.8.0
+pytest-factoryboy==2.7.0
+python-dateutil==2.9.0.post0
+python-json-logger==2.0.7
 requests==2.31.0
 rsa==4.9
+six==1.16.0
 sqlparse==0.5.0
 tomli==2.0.1
 typing_extensions==4.11.0
 uritemplate==4.1.1
 urllib3==2.2.1
+whitenoise==6.6.0
 wrapt==1.16.0
