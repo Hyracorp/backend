@@ -10,6 +10,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 LOKI_URL = env("LOKI_URL")
 LOGLEVEL = "INFO"
+LOGGING_CONFIG = None
 
 
 class LokiFormatter(jsonlogger.JsonFormatter):
@@ -46,38 +47,6 @@ LOGGING = {
             "level": LOGLEVEL,
             "handlers": ["console", "loki"],
         },
-        "django.server": DEFAULT_LOGGING["loggers"]["django.server"],
-    },
-}
-LOGGING_CONFIG = None
-LOGLEVEL = "INFO"
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        # Use JSON formatter as default
-        "default": {
-            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-        },
-        "django.server": DEFAULT_LOGGING["formatters"]["django.server"],
-    },
-    "handlers": {
-        # Route console logs to stdout
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "default",
-        },
-        "django.server": DEFAULT_LOGGING["handlers"]["django.server"],
-    },
-    "loggers": {
-        # Default logger for all Python modules
-        "": {
-            "level": LOGLEVEL,
-            "handlers": [
-                "console",
-            ],
-        },
-        # Default runserver request logging
         "django.server": DEFAULT_LOGGING["loggers"]["django.server"],
     },
 }
