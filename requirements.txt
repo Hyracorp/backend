@@ -27,6 +27,7 @@ idna==3.7
 inflection==0.5.1
 iniconfig==2.0.0
 lazy-object-proxy==1.10.0
+loguru==0.7.2
 Markdown==3.6
 mccabe==0.7.0
 packaging==24.0
