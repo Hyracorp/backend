@@ -1,8 +1,6 @@
-from django.utils.log import DEFAULT_LOGGING
 import environ
 import os
 from pathlib import Path
-from pythonjsonlogger import jsonlogger
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
