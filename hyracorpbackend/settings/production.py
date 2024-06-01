@@ -1,8 +1,6 @@
 import environ
 import os
 from pathlib import Path
-import logging
-from loguru import logger
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -51,30 +49,19 @@ LOKI_URL = env("LOKI_URL")
 LOGGING_CONFIG = None
 
 
-class InterceptHandler(logging.Handler):
-    def emit(self, record):
-        logger_opt = logger.opt(depth=6, exception=record.exc_info)
-        logger_opt.log(record.levelname, record.getMessage())
-
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
-        "default": {
+        "console": {
             "class": "logging.StreamHandler",
-        },
-        "loki": {
-            "class": "logging_loki.LokiHandler",
-            "url": LOKI_URL,
-            "tags": {"application": "hyracorp"},
-            "version": "1",
         },
     },
     "loggers": {
-        "": {
-            "handlers": ["default", "loki"],
+        "django": {
+            "handlers": ["console"],
             "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
