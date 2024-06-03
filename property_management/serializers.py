@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from .models import ResidentialProperty, CommercialProperty, PropertyPhoto, Amenity
+from .models import (
+    ResidentialProperty,
+    CommercialProperty,
+    PropertyPhoto,
+    Amenity,
+    BookVisit,
+)
 
 
 class AmenitySerializer(serializers.ModelSerializer):
@@ -30,4 +36,10 @@ class CommercialPropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CommercialProperty
+        fields = "__all__"
+
+
+class BookVisitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookVisit
         fields = "__all__"
