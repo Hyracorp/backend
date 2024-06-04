@@ -94,12 +94,45 @@ class CommercialPropertyView(APIView):
 
 class BookVisitView(APIView):
     serializer_class = BookVisitSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, id=None):
 
         try:
-            properties = BookVisit.objects.filter(user=request.user)
+            if not id:
+                properties = BookVisit.filter(pk=id, user=request.user)
+            else:
+                properties = BookVisit.objects.filter(user=request.user)
             serializer = BookVisitSerializer(properties, many=True)
             return Response(serializer.data)
         except BookVisit.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, id=None):
+        request.data["user"] = request.user.id
+        serializer = BookVisitSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id):
+        user = request.user
+        try:
+            property = BookVisit.objects.get(pk=id, user=user)
+        except BookVisit.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = BookVisitSerializer(property, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, id, request):
+        user = request.user
+        try:
+            property = BookVisit.objects.get(pk=id, user=user)
+        except BookVisit.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        property.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

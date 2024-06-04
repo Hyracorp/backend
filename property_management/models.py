@@ -60,7 +60,7 @@ class ResidentialProperty(BaseProperty):
     landmark = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return self.title
+        return f"{self.pk} {self.property.title}"
 
 
 class CommercialProperty(BaseProperty):
@@ -73,7 +73,7 @@ class CommercialProperty(BaseProperty):
     no_of_bike_parkings = models.IntegerField()
 
     def __str__(self):
-        return self.title
+        return f"{self.pk} {self.property.title}"
 
 
 class PropertyPhoto(models.Model):
@@ -81,6 +81,9 @@ class PropertyPhoto(models.Model):
         BaseProperty, on_delete=models.CASCADE, related_name="photos"
     )
     photo_url = models.URLField()
+
+    def __str__(self):
+        return f"{self.property.title} {self.pk}"
 
 
 class BookVisit(models.Model):
@@ -98,3 +101,6 @@ class BookVisit(models.Model):
     time = models.TimeField()
     visit_status = models.CharField(max_length=20, choices=visit_status_choices)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} {self.property.title}"
