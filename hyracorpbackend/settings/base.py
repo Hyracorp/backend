@@ -14,6 +14,9 @@ from pathlib import Path
 import environ
 import os
 from datetime import timedelta
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -145,3 +148,11 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env("EMAIL_PORT")
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+
+
+# cloudinary config
+cloudinary.config(
+    cloud_name=env("CLOUDINARY_CLOUD_NAME"),
+    api_key=env("CLOUDINARY_API_KEY"),
+    api_secret=env("CLOUDINARY_API_SECRET"),
+)

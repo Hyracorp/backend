@@ -17,10 +17,21 @@ class ResidentialPropertyView(APIView):
     permission_classes = [IsAuthenticated, IsLandlordUser]
 
     def get(self, request, id=None):
-
-        properties = ResidentialProperty.objects.filter(user=request.user)
-        serializer = ResidentialPropertySerializer(properties, many=True)
-        return Response(serializer.data)
+        try:
+            if not id:
+                properties = ResidentialProperty.objects.filter(user=request.user)
+                serializer = ResidentialPropertySerializer(properties, many=True)
+            else:
+                properties = ResidentialProperty.objects.get(pk=id, user=request.user)
+                serializer = ResidentialPropertySerializer(properties)
+            data = serializer.data
+            return Response(
+                data={"message": "success", "data": data}, status=status.HTTP_200_OK
+            )
+        except ResidentialProperty.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, data={"message": "Not found"}
+            )
 
     def post(self, request, id=None):
         request.data["user"] = request.user.id
@@ -57,10 +68,20 @@ class CommercialPropertyView(APIView):
     permission_classes = [IsAuthenticated, IsLandlordUser]
 
     def get(self, request, id=None):
-
-        properties = CommercialProperty.objects.filter(user=request.user)
-        serializer = CommercialPropertySerializer(properties, many=True)
-        return Response(serializer.data)
+        try:
+            if not id:
+                properties = CommercialProperty.objects.filter(user=request.user)
+                serializer = CommercialPropertySerializer(properties, many=True)
+            else:
+                properties = CommercialProperty.objects.get(pk=id, user=request.user)
+                serializer = CommercialPropertySerializer(properties)
+            return Response(
+                status.HTTP_200_OK, data={"message": "success", "data": serializer.data}
+            )
+        except CommercialProperty.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, data={"message": "Not found"}
+            )
 
     def post(self, request, id=None):
         request.data["user"] = request.user.id
@@ -106,7 +127,9 @@ class BookVisitView(APIView):
             serializer = BookVisitSerializer(properties, many=True)
             return Response(serializer.data)
         except BookVisit.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                status=status.HTTP_404_NOT_FOUND, data={"message": "Not found"}
+            )
 
     def post(self, request, id=None):
         request.data["user"] = request.user.id

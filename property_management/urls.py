@@ -1,8 +1,11 @@
 from django.urls import path
 
-from .views import ResidentialPropertyView, BookVisitView
+from .views import ResidentialPropertyView, BookVisitView, CommercialPropertyView
 
 urlpatterns = [
-    path("<int:id>", ResidentialPropertyView.as_view(), name="property"),
-    path("book", BookVisitView.as_view(), name="property-book-visit"),
+    path("residential", ResidentialPropertyView.as_view()),
+    path("residential/<int:id>", ResidentialPropertyView.as_view()),
+    path("commercial", CommercialPropertyView.as_view()),
+    path("commercial/<int:id>", CommercialPropertyView.as_view()),
+    path("book", BookVisitView.as_view()),
 ]

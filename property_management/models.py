@@ -1,5 +1,6 @@
 from django.db import models
 from user_auth.models import User
+from cloudinary.models import CloudinaryField
 
 
 class Amenity(models.Model):
@@ -60,7 +61,7 @@ class ResidentialProperty(BaseProperty):
     landmark = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return f"{self.pk} {self.property.title}"
+        return f"{self.pk} {self.city} {self.title}"
 
 
 class CommercialProperty(BaseProperty):
@@ -73,14 +74,14 @@ class CommercialProperty(BaseProperty):
     no_of_bike_parkings = models.IntegerField()
 
     def __str__(self):
-        return f"{self.pk} {self.property.title}"
+        return f"{self.pk} {self.city}  {self.title}"
 
 
 class PropertyPhoto(models.Model):
     property = models.ForeignKey(
         BaseProperty, on_delete=models.CASCADE, related_name="photos"
     )
-    photo_url = models.URLField()
+    photo_url = CloudinaryField("image")
 
     def __str__(self):
         return f"{self.property.title} {self.pk}"
