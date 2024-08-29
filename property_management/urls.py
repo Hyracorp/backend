@@ -1,11 +1,8 @@
 from django.urls import path
-
-from .views import ResidentialPropertyView, BookVisitView, CommercialPropertyView
-
+from .views import  PropertyView, PropertyDetailView, PropertySearchView
 urlpatterns = [
-    path("residential", ResidentialPropertyView.as_view()),
-    path("residential/<int:id>", ResidentialPropertyView.as_view()),
-    path("commercial", CommercialPropertyView.as_view()),
-    path("commercial/<int:id>", CommercialPropertyView.as_view()),
-    path("book", BookVisitView.as_view()),
+ 
+    path("search", PropertySearchView.as_view()),
+    path("",PropertyView.as_view()),
+    path("<int:pk>", PropertyDetailView.as_view()),
 ]
