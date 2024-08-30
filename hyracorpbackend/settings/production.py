@@ -66,11 +66,17 @@ LOGGING = {
     },
 }
 
-ALLOWED_HOSTS = [env("SERVER_DOMAIN"), env("SERVER_IP"), "0.0.0.0"]
+ALLOWED_HOSTS = [
+    env("SERVER_DOMAIN"),
+    env("SERVER_IP"),
+    "0.0.0.0",
+    "127.0.0.1",
+    "localhost",
+]
 # temp testing config
 CORS_ALLOW_ALL_ORIGINS = True
 CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS = [env("SERVER_SERVER_URL"), "http://localhost:3000"]
 
 # production config to apply
 

@@ -19,7 +19,9 @@ class UserManager(BaseUserManager):
             raise ValueError("The first name must be set")
         if not last_name:
             raise ValueError("The last name must be set")
-        user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
+        user = self.model(
+            email=email, first_name=first_name, last_name=last_name, **extra_fields
+        )
         if password:
             user.set_password(password)  # Hash the password
         else:
@@ -31,6 +33,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("is_verified", True)
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
