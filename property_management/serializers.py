@@ -1,5 +1,9 @@
 from rest_framework import serializers
 
+from django.utils import timezone
+from datetime import datetime, timedelta
+
+
 from .models import (
     ResidentialProperty,
     CommercialProperty,
@@ -65,7 +69,56 @@ class CommercialPropertySearchSerializer(serializers.ModelSerializer):
         except:
             return None
 class BookVisitSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = BookVisit
-        fields = "__all__"
+        fields = '__all__'
+        extra_kwargs = {
+            'visit_status': {'required': True},
+            'phone': {'required': True},
+            'gender': {'required': True},
+            'visit_status': {'required': False},  # Mark visit_status as optional
+            'user': {'read_only': True}, # Mark user as optional
+        }
+
+    def validate(self, data):
+        """
+        Ensure the booking meets time constraints and slot availability.
+        """
+        now = timezone.localtime(timezone.now())  # This is timezone-aware and uses the local timezone
+
+        # Combine date and time, and make it timezone-aware
+        booking_naive = datetime.combine(data['date'], datetime.strptime(data['time'], "%H:%M").time())
+        booking_datetime = timezone.make_aware(booking_naive, timezone.get_current_timezone())
+
+        # Ensure the booking is made at least 5 hours in advance
+        if booking_datetime - now < timedelta(hours=5):
+            raise serializers.ValidationError("You must book a visit at least 5 hours in advance.")
+
+        # Check that the time slot is available
+        if BookVisit.objects.filter(
+            property=data['property'],
+            date=data['date'],
+            time=data['time']
+        ).exists():
+            raise serializers.ValidationError("This time slot is already booked.")
+
+        return data
+    def create(self, validated_data):
+            """
+            Automatically set visit_status to "Pending" and assign the current user to the booking.
+            """
+            validated_data['visit_status'] = "Pending"
+            validated_data['user'] = self.context['request'].user
+            
+            return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Handle approval logic when updating the visit status.
+        """
+        if 'visit_status' in validated_data:
+            if validated_data['visit_status'] == 'Approved' and instance.visit_status != 'Pending':
+                raise serializers.ValidationError("Visit can only be approved if it is in Pending status.")
+        
+        return super().update(instance, validated_data)

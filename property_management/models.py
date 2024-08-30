@@ -28,9 +28,13 @@ class BaseProperty(models.Model):
     area_sq_ft = models.FloatField()
     floor_no = models.CharField(max_length=20)
     expected_rate_rent = models.FloatField()
+    expected_deposit = models.FloatField()
+    description = models.TextField()
+    property_owner = models.CharField(max_length=255)
     property_insured = models.BooleanField()
     title = models.CharField(max_length=255)
-    property_location = models.CharField(max_length=255)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     address_line1 = models.CharField(max_length=255)
     address_line2 = models.CharField(max_length=255, blank=True)
     pincode = models.CharField(max_length=10)
@@ -94,14 +98,47 @@ class BookVisit(models.Model):
         ("Approved", "Approved"),
         ("Cancelled", "Cancelled"),
         ("Rejected", "Rejected"),
+        ("Visited", "Visited"),
         ("Finalized", "Finalized"),
+        ("Expired", "Expired"),
+        ("Rescheduled", "Rescheduled"),
+    ]
+    gender_choices = [
+        ("Male", "Male"),
+        ("Female", "Female"),
+        ("Other", "Other"),
+    ]
+    # Define valid time slots
+    time_choices = [
+        ("09:00", "09:00 AM"),
+        ("11:00", "11:00 AM"),
+        ("13:00", "01:00 PM"),
+        ("15:00", "03:00 PM"),
+        ("17:00", "05:00 PM"),
+        ("19:00", "07:00 PM"),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     property = models.ForeignKey(ResidentialProperty, on_delete=models.CASCADE)
+    gender = models.CharField(max_length=10, choices=gender_choices)
+    phone = models.CharField(max_length=13)
     date = models.DateField()
-    time = models.TimeField()
+    time = models.CharField(max_length=5, choices=time_choices)
     visit_status = models.CharField(max_length=20, choices=visit_status_choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'property', 'date', 'time')
+    def __str__(self):
+        return f"{self.user.email} ( {self.visit_status} )"
+
+class Agreement(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    property = models.ForeignKey(ResidentialProperty, on_delete=models.CASCADE)
+    from_date = models.DateField()
+    to_date = models.DateField()
+    agreement = CloudinaryField("image")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.email} {self.property.title}"
+
