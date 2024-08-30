@@ -21,8 +21,7 @@ jobs:
           ssh-host: ${{ secrets.IP_HOST }}
       - name: Install latest version of docker with experimental compose support
         run: |
-          pip install --upgrade pip setuptools wheel cython
-          pip install docker-compose
+            sudo apt install docker-compose
       - name: Generate env file Base64 encoded string (base64 -i .env)
         uses: RollyPeres/base64-to-path@v1
         with:
