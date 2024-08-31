@@ -21,12 +21,31 @@ class AmenitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Amenity
         fields = ["id", "name"]
-
-
 class PropertyPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyPhoto
-        fields = ["id", "photo_url"]
+        fields = ["id", "photo_url","alt_text","title","approved"]
+        extra_kwargs = {
+            'approved': {'read_only': True},  # If you don't want users to set this field directly
+        }
+
+    def validate_photo_url(self, value):
+        """
+        Optional: Validate the photo URL if needed.
+        """
+        if not value:
+            raise serializers.ValidationError("Photo URL cannot be empty.")
+        return value
+
+    def validate(self, data):
+        """
+        Optional: Add any additional validation logic here.
+        """
+        if not data.get('alt_text'):
+            raise serializers.ValidationError("Alt text is required.")
+        if not data.get('title'):
+            raise serializers.ValidationError("Title is required.")
+        return data
 
 
 class ResidentialPropertySerializer(BasePropertySerializer):
@@ -122,3 +141,23 @@ class BookVisitSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Visit can only be approved if it is in Pending status.")
         
         return super().update(instance, validated_data)
+    def to_representation(self, instance):
+        """
+        Automatically mark visit_status as 'Expired' if the booking date has passed and status is not 'Finalized' or 'Visited'.
+        """
+        now = timezone.localtime(timezone.now())
+
+        # Combine the booking date and time, and make it timezone-aware
+        booking_naive = datetime.combine(instance.date, datetime.strptime(instance.time, "%H:%M").time())
+        booking_datetime = timezone.make_aware(booking_naive, timezone.get_current_timezone())
+
+        # Check if the booking date has passed
+        if booking_datetime < now:
+            if instance.visit_status not in ['Finalized', 'Visited']:
+                # Update the status to 'Expired' if it hasn't already been set
+                instance.visit_status = 'Expired'
+                instance.save()
+
+        return super().to_representation(instance)
+
+

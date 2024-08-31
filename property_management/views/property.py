@@ -1,9 +1,9 @@
 
-from rest_framework import generics, status
+from rest_framework import generics, status,viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty
-from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer
+from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto
+from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer,BookVisitSerializer,PropertyPhotoSerializer
 from rest_framework.permissions import IsAuthenticated
 from user_profile.permissions import IsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
@@ -109,7 +109,22 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
             except CommercialProperty.DoesNotExist:
                 raise Http404("Commercial Property not found.")
         return obj
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
 
+        # Get the serialized data
+        data = serializer.data
+
+        # Add booking information
+        user = request.user
+        bookings = BookVisit.objects.filter(property=instance, user=user)
+        booking_data = BookVisitSerializer(bookings, many=True).data
+
+        # Add the booking data to the response
+        data['bookings'] = booking_data
+
+        return Response(data)
     def get_serializer_class(self):
         
         instance = self.get_object() 
@@ -194,3 +209,13 @@ class PropertySearchView(generics.ListAPIView):
         context['property_type'] = self.request.query_params.get('property_type')
         return context
 
+
+
+class PropertyPhotoViewSet(viewsets.ModelViewSet):
+    queryset = PropertyPhoto.objects.all()
+    serializer_class = PropertyPhotoSerializer
+    permission_classes = [IsAuthenticated, IsLandlordOrTenantReadOnly]
+
+    def perform_create(self, serializer):
+        # You can add additional logic here if needed before saving
+        serializer.save()

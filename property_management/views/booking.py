@@ -5,8 +5,9 @@ from property_management.models import BookVisit
 from property_management.serializers import BookVisitSerializer
 from django.utils import timezone
 from datetime import datetime, timedelta
-
+from rest_framework.permissions import IsAuthenticated
 class AvailableSlotsAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = BookVisitSerializer
 
     def get(self, request, *args, **kwargs):

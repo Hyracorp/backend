@@ -43,6 +43,7 @@ class BaseProperty(models.Model):
     approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     amenities = models.ManyToManyField(Amenity, blank=True)
+    rules = models.TextField(blank=True)
 
     def __str__(self):
         return self.title
@@ -86,9 +87,12 @@ class PropertyPhoto(models.Model):
         BaseProperty, on_delete=models.CASCADE, related_name="photos"
     )
     photo_url = CloudinaryField("image")
+    alt_text = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.property.title} {self.pk}"
+        return f"{self.property.title} {self.property.id}"
 
 
 class BookVisit(models.Model):
