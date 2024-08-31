@@ -18,7 +18,8 @@ from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.conf import settings
 from .models import User
-
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 class RegisterUserView(GenericAPIView):
     permission_classes = []
@@ -102,6 +103,26 @@ class LoginUserView(APIView):
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        # Extract the refresh token from the cookie
+        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
+
+        if not refresh_token:
+            return Response({"detail": "Refresh token cookie not found."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Prepare data for the serializer
+        data = {'refresh': refresh_token}
+        
+        # Use the default TokenRefreshSerializer to validate and generate a new access token
+        serializer = self.get_serializer(data=data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Return the new access token
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 class PasswordResetRequestView(APIView):
     serializer_class = PasswordResetRequestSerializer
