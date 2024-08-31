@@ -70,20 +70,22 @@ class VerifyUserView(GenericAPIView):
 class LoginUserView(APIView):
     permission_classes = []
 
-    def post(self, request: Request):
-
+    def post(self, request):
         data = request.data
-        res = Response()
         email = data.get('email')
         password = data.get('password')
-        user = authenticate(email=email, password=password)
+        user = authenticate(request, email=email, password=password)
 
         if user is None:
-            raise AuthenticationFailed('User not found')
+            raise AuthenticationFailed('Invalid email or password')
 
-        if user.is_verified is False:
+        if not user.is_verified:
             raise AuthenticationFailed('Email not verified')
+
         tokens = user.tokens()
+
+        # Set the refresh token in a cookie
+        res = Response()
         res.set_cookie(
             key=settings.SIMPLE_JWT['AUTH_COOKIE'],
             value=tokens.get('refresh'),
@@ -92,21 +94,13 @@ class LoginUserView(APIView):
             httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
             samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
         )
-        response = {
+
+        # Return the access token in the response body
+        response_data = {
             "message": "Login successful",
             "tokens": tokens.get('access'),
         }
-        res.data = response
-        res.status_code = status.HTTP_200_OK
-
-        return res
-
-    def get(self, request: Request):
-        content = {
-            "user": str(request.user),
-            "auth": str(request.auth),
-        }
-        return Response(data=content, status=status.HTTP_200_OK)
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class PasswordResetRequestView(APIView):
