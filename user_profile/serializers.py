@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from user_auth.models import User
 
-from .models import TenantUserProfile, LandlordUserProfile
+from .models import TenantUserProfile, LandlordUserProfile, IDProof
 
 
 class TenantUserProfileSerializer(serializers.ModelSerializer):
@@ -44,3 +44,10 @@ class LandlordUserProfileSerializer(serializers.ModelSerializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("User does not exist")
         return attrs
+
+
+class IDProofSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IDProof
+        fields = "__all__"
+        extra_kwargs = {"user": {"required": False}}

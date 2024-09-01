@@ -65,7 +65,8 @@ class LandlordUserProfileView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         user = request.user
-        landlord_profile = LandlordUserProfile.objects.filter(user=user).first()
+        landlord_profile = LandlordUserProfile.objects.filter(
+            user=user).first()
         if landlord_profile:
             serializer = LandlordUserProfileSerializer(landlord_profile)
             return Response(serializer.data)
@@ -99,4 +100,16 @@ class LandlordUserProfileView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IDProofView(APIView):
+    permission_classes = [IsAuthenticated, IsLandlordUser]
+
+    def post(self, request):
+        request.data["user"] = request.user.id
+        serializer = TenantUserProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
