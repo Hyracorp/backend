@@ -75,7 +75,7 @@ ALLOWED_HOSTS = [
 ]
 # temp testing config
 CORS_ALLOW_ALL_ORIGINS = False
-
+CORS_ALLOW_CREDENTIALS = True
 # production config to apply
 
 CORS_ALLOWED_ORIGINS = [
