@@ -3,7 +3,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto
-from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer
+from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer
 from rest_framework.permissions import IsAuthenticated
 from user_profile.permissions import IsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
@@ -169,13 +169,14 @@ class PropertySearchView(generics.ListAPIView):
         property_type = self.request.query_params.get('property_type')
         lat = self.request.query_params.get('latitude')
         lon = self.request.query_params.get('longitude')
-        max_distance = self.request.query_params.get(
-            'max_distance', 10)  # Default to 10 km
+        max_distance = self.request.query_params.get('max_distance', 10)  # Default to 10 km
 
         # Validate property type
         if property_type not in ['Commercial', 'Residential']:
-            raise ValidationError(
-                {"property_type": "Invalid or missing property_type. Must be 'Commercial' or 'Residential'."})
+            return Response(
+                {"error": "Invalid or missing property_type. Must be 'Commercial' or 'Residential'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Get the appropriate queryset based on property type
         if property_type == 'Commercial':
@@ -190,17 +191,39 @@ class PropertySearchView(generics.ListAPIView):
                 lon = float(lon)
                 max_distance = float(max_distance)
             except ValueError:
-                raise ValidationError(
-                    {"latitude/longitude/max_distance": "Invalid format. These should be valid float numbers."})
+                return Response(
+                    {"error": "Invalid format for latitude, longitude, or max_distance. These should be valid float numbers."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            queryset = filter_properties_by_proximity(
-                queryset, lat, lon, max_distance)
+            queryset = filter_properties_by_proximity(queryset, lat, lon, max_distance)
         elif lat or lon:
             # If one of the coordinates is missing
-            raise ValidationError(
-                {"latitude/longitude": "Both latitude and longitude must be provided together."})
+            return Response(
+                {"error": "Both latitude and longitude must be provided together."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        # Override the list method to handle the Response object from get_queryset
+        queryset = self.get_queryset()
+
+        # If the queryset is actually a Response object, return it directly
+        if isinstance(queryset, Response):
+            return queryset
+
+        # Continue with the normal flow if queryset is valid
+        queryset = self.filter_queryset(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def get_serializer_class(self):
         property_type = self.request.query_params.get('property_type')
@@ -212,11 +235,8 @@ class PropertySearchView(generics.ListAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['property_type'] = self.request.query_params.get(
-            'property_type')
+        context['property_type'] = self.request.query_params.get('property_type')
         return context
-
-
 class PropertyPhotoViewSet(viewsets.ModelViewSet):
     queryset = PropertyPhoto.objects.all()
     serializer_class = PropertyPhotoSerializer
@@ -228,7 +248,9 @@ class PropertyPhotoViewSet(viewsets.ModelViewSet):
 
 
 class FeaturedPropertyView(generics.ListAPIView):
-    queryset = BaseProperty.objects.all()[:3]
     permission_classes = []
-    serializer_class = BasePropertySerializer
+    serializer_class = BasePropertySearchSerializer
 
+    def get_queryset(self):
+        # Return the first 3 properties
+        return BaseProperty.objects.all()[:3]

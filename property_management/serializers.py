@@ -14,12 +14,6 @@ from .models import (
 )
 
 
-class BasePropertySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BaseProperty
-        fields = '__all__'
-
-
 class AmenitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Amenity
@@ -52,6 +46,12 @@ class PropertyPhotoSerializer(serializers.ModelSerializer):
         if not data.get('title'):
             raise serializers.ValidationError("Title is required.")
         return data
+
+
+class BasePropertySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseProperty
+        fields = '__all__'
 
 
 class ResidentialPropertySerializer(BasePropertySerializer):
@@ -92,6 +92,21 @@ class CommercialPropertySearchSerializer(serializers.ModelSerializer):
 
     class Meta(BasePropertySerializer.Meta):
         model = CommercialProperty
+        fields = ["id", "title", "city", "state", "pincode",
+                  "expected_rate_rent", "first_photo_url"]
+
+    def get_first_photo_url(self, obj):
+        try:
+            return obj.photos.first().photo_url.url
+        except:
+            return None
+
+
+class BasePropertySearchSerializer(serializers.ModelSerializer):
+    first_photo_url = serializers.SerializerMethodField()
+
+    class Meta(BasePropertySerializer.Meta):
+        model = BaseProperty
         fields = ["id", "title", "city", "state", "pincode",
                   "expected_rate_rent", "first_photo_url"]
 
