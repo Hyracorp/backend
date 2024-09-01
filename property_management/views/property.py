@@ -1,20 +1,21 @@
 
-from rest_framework import generics, status,viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto
-from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer,BookVisitSerializer,PropertyPhotoSerializer
+from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer
 from rest_framework.permissions import IsAuthenticated
 from user_profile.permissions import IsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
-#Proximity Search
+# Proximity Search
 
 import math
 from django.db.models import F, FloatField, ExpressionWrapper
 from django.db.models.functions import ACos, Cos, Radians, Sin
+
 
 def filter_properties_by_proximity(queryset, target_lat, target_lon, max_distance):
     """
@@ -23,7 +24,7 @@ def filter_properties_by_proximity(queryset, target_lat, target_lon, max_distanc
     # Convert degrees to radians
     target_lat_rad = Radians(target_lat)
     target_lon_rad = Radians(target_lon)
-    
+
     # Haversine formula
     distance_expr = ExpressionWrapper(
         6371 * ACos(
@@ -33,13 +34,11 @@ def filter_properties_by_proximity(queryset, target_lat, target_lon, max_distanc
         ),
         output_field=FloatField()
     )
-    
+
     # Annotate the queryset with the calculated distance and filter by max_distance
-    queryset = queryset.annotate(distance=distance_expr).filter(distance__lte=max_distance)
+    queryset = queryset.annotate(distance=distance_expr).filter(
+        distance__lte=max_distance)
     return queryset
-
-
-
 
 
 # view or add property
@@ -52,7 +51,7 @@ class PropertyView(APIView):
                 property = BaseProperty.objects.get(pk=pk)
             except BaseProperty.DoesNotExist:
                 raise Http404("Property not found.")
-            
+
             if property.property_type == "Residential":
                 try:
                     property = ResidentialProperty.objects.get(pk=pk)
@@ -92,6 +91,7 @@ class PropertyView(APIView):
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsLandlordOrTenantReadOnly]
     queryset = BaseProperty.objects.all()
+
     def get_object(self):
         try:
             obj = super().get_object()
@@ -109,6 +109,7 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
             except CommercialProperty.DoesNotExist:
                 raise Http404("Commercial Property not found.")
         return obj
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
@@ -125,15 +126,15 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         data['bookings'] = booking_data
 
         return Response(data)
+
     def get_serializer_class(self):
-        
-        instance = self.get_object() 
-        if isinstance(instance, ResidentialProperty): 
+
+        instance = self.get_object()
+        if isinstance(instance, ResidentialProperty):
             return ResidentialPropertySerializer
-        elif isinstance(instance, CommercialProperty): 
+        elif isinstance(instance, CommercialProperty):
             return CommercialPropertySerializer
         return BasePropertySerializer
-        
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -141,14 +142,14 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer_class = self.get_serializer_class()
 
         try:
-            serializer = serializer_class(instance, data=request.data, partial=partial)
+            serializer = serializer_class(
+                instance, data=request.data, partial=partial)
             if serializer.is_valid():
                 self.perform_update(serializer)
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -168,18 +169,20 @@ class PropertySearchView(generics.ListAPIView):
         property_type = self.request.query_params.get('property_type')
         lat = self.request.query_params.get('latitude')
         lon = self.request.query_params.get('longitude')
-        max_distance = self.request.query_params.get('max_distance', 10)  # Default to 10 km
+        max_distance = self.request.query_params.get(
+            'max_distance', 10)  # Default to 10 km
 
         # Validate property type
         if property_type not in ['Commercial', 'Residential']:
-            raise ValidationError({"property_type": "Invalid or missing property_type. Must be 'Commercial' or 'Residential'."})
+            raise ValidationError(
+                {"property_type": "Invalid or missing property_type. Must be 'Commercial' or 'Residential'."})
 
         # Get the appropriate queryset based on property type
         if property_type == 'Commercial':
             queryset = CommercialProperty.objects.filter(approved=True)
         elif property_type == 'Residential':
             queryset = ResidentialProperty.objects.filter(approved=True)
-        
+
         # If latitude and longitude are provided, filter by proximity
         if lat and lon:
             try:
@@ -187,12 +190,15 @@ class PropertySearchView(generics.ListAPIView):
                 lon = float(lon)
                 max_distance = float(max_distance)
             except ValueError:
-                raise ValidationError({"latitude/longitude/max_distance": "Invalid format. These should be valid float numbers."})
-            
-            queryset = filter_properties_by_proximity(queryset, lat, lon, max_distance)
+                raise ValidationError(
+                    {"latitude/longitude/max_distance": "Invalid format. These should be valid float numbers."})
+
+            queryset = filter_properties_by_proximity(
+                queryset, lat, lon, max_distance)
         elif lat or lon:
             # If one of the coordinates is missing
-            raise ValidationError({"latitude/longitude": "Both latitude and longitude must be provided together."})
+            raise ValidationError(
+                {"latitude/longitude": "Both latitude and longitude must be provided together."})
 
         return queryset
 
@@ -206,9 +212,9 @@ class PropertySearchView(generics.ListAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['property_type'] = self.request.query_params.get('property_type')
+        context['property_type'] = self.request.query_params.get(
+            'property_type')
         return context
-
 
 
 class PropertyPhotoViewSet(viewsets.ModelViewSet):
@@ -219,3 +225,10 @@ class PropertyPhotoViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # You can add additional logic here if needed before saving
         serializer.save()
+
+
+class FeaturedPropertyView(generics.ListAPIView):
+    queryset = BaseProperty.objects.all()[:3]
+    permission_classes = []
+    serializer_class = BasePropertySerializer
+
