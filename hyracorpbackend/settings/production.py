@@ -74,17 +74,16 @@ ALLOWED_HOSTS = [
     "localhost",
 ]
 # temp testing config
-CORS_ALLOW_ALL_ORIGINS = True
-CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = [env("SERVER_SERVER_URL"), "http://localhost:3000"]
+CORS_ALLOW_ALL_ORIGINS = False
 
 # production config to apply
 
-# CORS_ALLOWED_ORIGINS = [
-#     env("APP_URL"),
-#     env("SERVER_URL"),
-# ]
-# CSRF_COOKIE_SECURE = True
-# CSRF_TRUSTED_ORIGINS = [
-#     env("APP_URL"),
-# ]
+CORS_ALLOWED_ORIGINS = [
+    env("APP_URL"),
+    env("SERVER_URL"),
+"http://localhost:3000"
+]
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = [
+    env("APP_URL"),
+]
