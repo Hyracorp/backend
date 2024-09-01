@@ -80,7 +80,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
     env("APP_URL"),
-    env("SERVER_URL"),
+    env("SERVER_SERVER_URL"),
 "http://localhost:3000"
 ]
 CSRF_COOKIE_SECURE = True
