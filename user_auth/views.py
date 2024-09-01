@@ -85,8 +85,13 @@ class LoginUserView(APIView):
 
         tokens = user.tokens()
 
+        # Prepare the response
+        res = Response({
+            "message": "Login successful",
+            "access_token": tokens.get('access'),
+        }, status=status.HTTP_200_OK)
+
         # Set the refresh token in a cookie
-        res = Response()
         res.set_cookie(
             key=settings.SIMPLE_JWT['AUTH_COOKIE'],
             value=tokens.get('refresh'),
@@ -96,12 +101,7 @@ class LoginUserView(APIView):
             samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
         )
 
-        # Return the access token in the response body
-        response_data = {
-            "message": "Login successful",
-            "tokens": tokens.get('access'),
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+        return res
 
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
