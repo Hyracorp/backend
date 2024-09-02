@@ -85,10 +85,18 @@ class LoginUserView(APIView):
 
         tokens = user.tokens()
 
+        # Determine the user type
+        user_type = None
+        if user.is_landlord:
+            user_type = 'landlord'
+        elif user.is_tenant:
+            user_type = 'tenant'
+
         # Prepare the response
         res = Response({
             "message": "Login successful",
             "access_token": tokens.get('access'),
+            "user_type": user_type  # Add user type to the response
         }, status=status.HTTP_200_OK)
 
         # Set the refresh token in a cookie
