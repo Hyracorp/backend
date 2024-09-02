@@ -30,9 +30,11 @@ class AvailableSlotsAPIView(generics.GenericAPIView):
         # Define valid time slots
         valid_slots = ["09:00", "11:00", "13:00", "15:00", "17:00"]
 
+        valid_visit_status = ["Approved", "Pending"]
+
         # Get booked slots for the given date and property
         booked_slots = BookVisit.objects.filter(
-            date=date, property=property_id).values_list('time', flat=True)
+            date=date, property=property_id, visit_status__in=valid_visit_status).values_list('time', flat=True)
 
         # Current time with timezone support
         now = timezone.localtime(timezone.now())
