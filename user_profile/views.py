@@ -11,12 +11,7 @@ from .permissions import IsTenantUser, IsLandlordUser
 class TenantUserProfileView(APIView):
     permission_classes = [IsAuthenticated, IsTenantUser]
 
-    def get(self, request, id=None):
-        if id is None:
-            return Response(
-                data={"message": "Id is required to retrieve"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+    def get(self, request):
         user = request.user
         tenant_profile = TenantUserProfile.objects.filter(user=user).first()
         if tenant_profile:
@@ -58,12 +53,7 @@ class TenantUserProfileView(APIView):
 class LandlordUserProfileView(APIView):
     permission_classes = [IsAuthenticated, IsLandlordUser]
 
-    def get(self, request, id=None):
-        if id is None:
-            return Response(
-                data={"message": "Id is required to retrieve"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+    def get(self, request):
         user = request.user
         landlord_profile = LandlordUserProfile.objects.filter(
             user=user).first()
