@@ -53,13 +53,31 @@ class AvailableSlotsAPIView(generics.GenericAPIView):
 
 
 class BookVisitAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = BookVisitSerializer
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, visit_status="Pending")
 
 
+class BookVisitListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BookVisitSerializer
+
+    def get_queryset(self):
+        if (self.request.user.is_superuser):
+            return BookVisit.objects.filter(user=self.request.user)
+        elif (self.request.user.is_landlord):
+            property = self.request.query_params.get('property')
+            return BookVisit.objects.filter(property=property)
+        elif (self.request.user.is_tenant):
+            return BookVisit.objects.filter(user=self.request.user)
+
+        return BookVisit.objects.none()
+
+
 class UpdateVisitStatusAPIView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = BookVisit.objects.all()
     serializer_class = BookVisitSerializer
     lookup_field = 'pk'
