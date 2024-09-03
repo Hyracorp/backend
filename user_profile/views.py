@@ -24,7 +24,7 @@ class TenantUserProfileView(APIView):
         else:
             return Response(
                 data={"message": "Profile not found, pls update",
-                      user: user_data},
+                      "data": user_data},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -72,7 +72,7 @@ class LandlordUserProfileView(APIView):
         else:
             return Response(
                 data={"message": "Profile not found, pls update",
-                      user: user_data},
+                      "data": user_data},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
