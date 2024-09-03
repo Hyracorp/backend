@@ -2,7 +2,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from django.utils import timezone
 from property_management.models import BookVisit
-from property_management.serializers import BookVisitSerializer
+from property_management.serializers import BookVisitSerializer, BookingListSerializer
 from django.utils import timezone
 from datetime import datetime, timedelta
 from rest_framework.permissions import IsAuthenticated
@@ -62,7 +62,7 @@ class BookVisitAPIView(generics.CreateAPIView):
 
 class BookVisitListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = BookVisitSerializer
+    serializer_class = BookingListSerializer
 
     def get_queryset(self):
         if (self.request.user.is_superuser):

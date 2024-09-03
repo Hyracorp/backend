@@ -49,6 +49,8 @@ class PropertyPhotoSerializer(serializers.ModelSerializer):
 
 
 class BasePropertySerializer(serializers.ModelSerializer):
+    photos = PropertyPhotoSerializer(many=True, read_only=True)
+
     class Meta:
         model = BaseProperty
         fields = '__all__'
@@ -118,7 +120,6 @@ class BasePropertySearchSerializer(serializers.ModelSerializer):
 
 
 class BookVisitSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = BookVisit
         fields = '__all__'
@@ -200,3 +201,12 @@ class BookVisitSerializer(serializers.ModelSerializer):
                 instance.save()
 
         return super().to_representation(instance)
+
+
+class BookingListSerializer(serializers.ModelSerializer):
+    property = BasePropertySerializer()
+
+    class Meta:
+        model = BookVisit
+        fields = ['id', 'user', 'property', 'gender', 'phone',
+                  'date', 'time', 'visit_status', 'created_at']
