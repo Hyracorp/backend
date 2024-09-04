@@ -275,3 +275,4 @@ class AmenitiesView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AmenitySerializer
     queryset = Amenity.objects.all()
+    paginate_by = None
