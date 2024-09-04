@@ -9,8 +9,8 @@ ID_PROOF = (('passport', 'Passport'), ('driving_license', 'Driving License'),
 
 
 class TenantUserProfile(models.Model):
-    gender = (('male', 'Male'), ('female', 'Female'), ('other', 'Other'))
-    marital_status = (('unmarried', 'Unmarried'), ('married', 'Married'))
+    gender = (('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other'))
+    marital_status = (('Single', 'Single'), ('Married', 'Married'))
     tId = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=255, blank=False, null=False)
