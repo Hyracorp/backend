@@ -3,7 +3,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto
-from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer
+from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer,BasePropertyListSerializer
 from rest_framework.permissions import IsAuthenticated
 from user_profile.permissions import IsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
@@ -68,7 +68,17 @@ class PropertyView(APIView):
                 serializer = BasePropertySerializer(property)
             return Response(serializer.data)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            try:
+                if request.user.is_superuser:
+                    queryset = BaseProperty.objects.all()
+                elif request.user.is_landlord:
+                    queryset = BaseProperty.objects.filter(user=request.user)
+                else:
+                    return Response({"error": "You are not authorized to view properties."}, status=status.HTTP_403_FORBIDDEN)
+                serializer = BasePropertyListSerializer(queryset, many=True)
+                return Response(serializer.data)
+            except BaseProperty.DoesNotExist:
+                return Response({"error": "No properties found."}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request):
         property_type = request.data.get('property_type')
@@ -169,7 +179,8 @@ class PropertySearchView(generics.ListAPIView):
         property_type = self.request.query_params.get('property_type')
         lat = self.request.query_params.get('latitude')
         lon = self.request.query_params.get('longitude')
-        max_distance = self.request.query_params.get('max_distance', 10)  # Default to 10 km
+        max_distance = self.request.query_params.get(
+            'max_distance', 10)  # Default to 10 km
 
         # Validate property type
         if property_type not in ['Commercial', 'Residential']:
@@ -196,7 +207,8 @@ class PropertySearchView(generics.ListAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            queryset = filter_properties_by_proximity(queryset, lat, lon, max_distance)
+            queryset = filter_properties_by_proximity(
+                queryset, lat, lon, max_distance)
         elif lat or lon:
             # If one of the coordinates is missing
             return Response(
@@ -235,8 +247,11 @@ class PropertySearchView(generics.ListAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['property_type'] = self.request.query_params.get('property_type')
+        context['property_type'] = self.request.query_params.get(
+            'property_type')
         return context
+
+
 class PropertyPhotoViewSet(viewsets.ModelViewSet):
     queryset = PropertyPhoto.objects.all()
     serializer_class = PropertyPhotoSerializer

@@ -119,6 +119,21 @@ class BasePropertySearchSerializer(serializers.ModelSerializer):
             return None
 
 
+class BasePropertyListSerializer(serializers.ModelSerializer):
+    first_photo_url = serializers.SerializerMethodField()
+
+    class Meta(BasePropertySerializer.Meta):
+        model = BaseProperty
+        fields = ["id", "title", "city", "state", "pincode",
+                  "expected_rate_rent", "first_photo_url", "approved", "property_type"]
+
+    def get_first_photo_url(self, obj):
+        try:
+            return obj.photos.first().photo_url.url
+        except:
+            return None
+
+
 class BookVisitSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookVisit
