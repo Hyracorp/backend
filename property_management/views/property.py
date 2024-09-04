@@ -3,7 +3,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto
-from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer,BasePropertyListSerializer
+from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer, BasePropertyListSerializer
 from rest_framework.permissions import IsAuthenticated
 from user_profile.permissions import IsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
@@ -74,7 +74,7 @@ class PropertyView(APIView):
                 elif request.user.is_landlord:
                     queryset = BaseProperty.objects.filter(user=request.user)
                 else:
-                    return Response({"error": "You are not authorized to view properties."}, status=status.HTTP_403_FORBIDDEN)
+                    queryset = BaseProperty.objects.none()
                 serializer = BasePropertyListSerializer(queryset, many=True)
                 return Response(serializer.data)
             except BaseProperty.DoesNotExist:

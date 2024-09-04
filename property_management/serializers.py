@@ -169,7 +169,8 @@ class BookVisitSerializer(serializers.ModelSerializer):
         if BookVisit.objects.filter(
             property=data['property'],
             date=data['date'],
-            time=data['time']
+            time=data['time'],
+            status__in=['Pending', 'Approved', 'Rescheduled']
         ).exists():
             raise serializers.ValidationError(
                 "This time slot is already booked.")
