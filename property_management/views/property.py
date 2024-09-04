@@ -2,8 +2,8 @@
 from rest_framework import generics, status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto
-from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer, BasePropertyListSerializer
+from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto, Amenity
+from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer, BasePropertyListSerializer, AmenitySerializer
 from rest_framework.permissions import IsAuthenticated
 from user_profile.permissions import IsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
@@ -269,3 +269,9 @@ class FeaturedPropertyView(generics.ListAPIView):
     def get_queryset(self):
         # Return the first 3 properties
         return BaseProperty.objects.all()[:3]
+
+
+class AmenitiesView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AmenitySerializer
+    queryset = Amenity.objects.all()

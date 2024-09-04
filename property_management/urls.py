@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PropertyView, PropertyDetailView, PropertySearchView, AvailableSlotsAPIView, BookVisitAPIView, UpdateVisitStatusAPIView, FeaturedPropertyView,BookVisitListAPIView
+from .views import PropertyView, PropertyDetailView, PropertySearchView, AvailableSlotsAPIView, BookVisitAPIView, UpdateVisitStatusAPIView, FeaturedPropertyView,BookVisitListAPIView,AmenitiesView
 urlpatterns = [
 
     path("search", PropertySearchView.as_view()),
@@ -10,4 +10,6 @@ urlpatterns = [
     path("booking/list", BookVisitListAPIView.as_view()),
     path("booking/<int:pk>", UpdateVisitStatusAPIView.as_view()),
     path("featured", FeaturedPropertyView.as_view()),
+    path("amenities", AmenitiesView.as_view()),
+
 ]
