@@ -170,7 +170,7 @@ class BookVisitSerializer(serializers.ModelSerializer):
             property=data['property'],
             date=data['date'],
             time=data['time'],
-            status__in=['Pending', 'Approved', 'Rescheduled']
+            visit_status__in=['Pending', 'Approved', 'Rescheduled']
         ).exists():
             raise serializers.ValidationError(
                 "This time slot is already booked.")
