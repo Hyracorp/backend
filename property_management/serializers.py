@@ -41,8 +41,6 @@ class PropertyPhotoSerializer(serializers.ModelSerializer):
         """
         Optional: Add any additional validation logic here.
         """
-        if not data.get('alt_text'):
-            raise serializers.ValidationError("Alt text is required.")
         if not data.get('title'):
             raise serializers.ValidationError("Title is required.")
         return data
