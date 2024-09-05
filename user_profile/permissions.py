@@ -40,11 +40,11 @@ class IsLandlordOrTenantReadOnly(permissions.BasePermission):
             # Allow full access for landlords
             if request.user.is_landlord:
                 return True
-            
+
             # Allow read-only access for tenants (non-landlords)
             if request.user.is_tenant and request.method in permissions.SAFE_METHODS:
                 return True
-            
+
             # Deny modification access for tenants
             return False
 
@@ -63,3 +63,41 @@ class IsLandlordOrTenantReadOnly(permissions.BasePermission):
         # Deny all other cases
         return False
 
+
+class NewIsLandlordOrTenantReadOnly(permissions.BasePermission):
+    """
+    Custom permission to allow:
+    - Landlords to perform any CRUD operation, but only on properties they own.
+    - Tenants to view properties (read-only).
+    """
+
+    def has_permission(self, request, view):
+        # Check if the user is authenticated
+        if request.user.is_authenticated:
+            # Allow full access for landlords
+            if request.user.is_landlord:
+                return True
+
+            # Allow read-only access for tenants (non-landlords)
+            if request.user.is_tenant and request.method in permissions.SAFE_METHODS:
+                return True
+
+            # Deny modification access for tenants
+            return False
+
+        # If user is not authenticated, deny access
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        # For landlord: allow full access only to their own properties
+        if request.user.is_landlord:
+            # Access the user through the related property (assuming obj is PropertyPhoto)
+            # Replace 'user' with 'owner' if necessary
+            return obj.property.user == request.user
+
+        # For tenant: allow read-only access
+        if request.user.is_tenant and request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Deny all other cases
+        return False

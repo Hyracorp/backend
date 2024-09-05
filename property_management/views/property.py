@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto, Amenity
 from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer, BasePropertyListSerializer, AmenitySerializer
 from rest_framework.permissions import IsAuthenticated
-from user_profile.permissions import IsLandlordOrTenantReadOnly
+from user_profile.permissions import IsLandlordOrTenantReadOnly,NewIsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -257,7 +257,7 @@ class PropertySearchView(generics.ListAPIView):
 class PropertyPhotoView(viewsets.ModelViewSet):
     queryset = PropertyPhoto.objects.all()
     serializer_class = PropertyPhotoSerializer
-    permission_classes = [IsAuthenticated, IsLandlordOrTenantReadOnly]
+    permission_classes = [IsAuthenticated, NewIsLandlordOrTenantReadOnly]
 
     def perform_create(self, serializer):
         # Get the 'property' field from form data
@@ -281,7 +281,6 @@ class PropertyPhotoView(viewsets.ModelViewSet):
         # If you have additional fields, add them to the data dictionary
 
         # Validate and save the serializer
-        data['user'] = self.request.user
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             # Save the PropertyPhoto instance and associate it with the property
