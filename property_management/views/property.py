@@ -261,7 +261,7 @@ class PropertyPhotoView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # Assuming 'property' is sent in the request
-        property_id = self.request.data.get('propertyId')
+        property_id = self.request.data.get('property')
 
         # If multiple photo data is sent as a list, process each one
         # 'photos' should be a list of dictionaries
