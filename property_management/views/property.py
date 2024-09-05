@@ -260,32 +260,38 @@ class PropertyPhotoView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsLandlordOrTenantReadOnly]
 
     def perform_create(self, serializer):
-        # Assuming 'property' is sent in the request
-        property_id = self.request.data.get('property')
+        # Get the 'property' field from form data
+        property_id = self.request.POST.get('property')
 
-        # If multiple photo data is sent as a list, process each one
-        # 'photos' should be a list of dictionaries
-        photo_data_list = self.request.data.get('photos')
+        # Ensure the property exists, or return 404 if not found
+        property_instance = get_object_or_404(BaseProperty, id=property_id)
 
-        # Validate and save each photo individually
-        if photo_data_list and isinstance(photo_data_list, list):
-            instances = []
-            for photo_data in photo_data_list:
-                serializer = self.get_serializer(data=photo_data)
-                if serializer.is_valid():
-                    serializer.save(property=property_id)
-                    instances.append(serializer.data)
-                else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            return Response(instances, status=status.HTTP_201_CREATED)
+        # Get the uploaded file from form data (usually under request.FILES)
+        photo_file = self.request.FILES.get('photo_url')
 
-        # If only a single record (not list) is sent, process it normally
-        else:
-            serializer = self.get_serializer(data=self.request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Get the 'title' field from the form data
+        title = self.request.POST.get('title')
+
+        # Create a dictionary to pass data to the serializer
+        data = {
+            'photo_url': photo_file,  # File is handled by request.FILES
+            'title': title,
+        }
+
+        # If you have additional fields, add them to the data dictionary
+
+        # Validate and save the serializer
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            # Save the PropertyPhoto instance and associate it with the property
+            serializer.save(property=property_instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, request, *args, **kwargs):
+        # Handle file upload and form data in POST request
+        return self.perform_create(self.get_serializer())
+
 
 
 class FeaturedPropertyView(generics.ListAPIView):
