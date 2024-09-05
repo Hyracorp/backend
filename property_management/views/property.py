@@ -9,7 +9,7 @@ from user_profile.permissions import IsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-
+from django.shortcuts import get_object_or_404
 # Proximity Search
 
 import math
