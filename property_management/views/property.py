@@ -260,8 +260,32 @@ class PropertyPhotoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsLandlordOrTenantReadOnly]
 
     def perform_create(self, serializer):
-        # You can add additional logic here if needed before saving
-        serializer.save()
+        # Assuming 'property' is sent in the request
+        property_id = self.request.data.get('propertyId')
+
+        # If multiple photo data is sent as a list, process each one
+        # 'photos' should be a list of dictionaries
+        photo_data_list = self.request.data.get('photos')
+
+        # Validate and save each photo individually
+        if photo_data_list and isinstance(photo_data_list, list):
+            instances = []
+            for photo_data in photo_data_list:
+                serializer = self.get_serializer(data=photo_data)
+                if serializer.is_valid():
+                    serializer.save(property=property_id)
+                    instances.append(serializer.data)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(instances, status=status.HTTP_201_CREATED)
+
+        # If only a single record (not list) is sent, process it normally
+        else:
+            serializer = self.get_serializer(data=self.request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FeaturedPropertyView(generics.ListAPIView):

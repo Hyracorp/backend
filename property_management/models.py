@@ -87,7 +87,6 @@ class PropertyPhoto(models.Model):
         BaseProperty, on_delete=models.CASCADE, related_name="photos"
     )
     photo_url = CloudinaryField("image")
-    alt_text = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     approved = models.BooleanField(default=False)
 
