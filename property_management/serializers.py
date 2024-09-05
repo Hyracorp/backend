@@ -23,7 +23,7 @@ class AmenitySerializer(serializers.ModelSerializer):
 class PropertyPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyPhoto
-        fields = ["id", "photo_url", "alt_text", "title", "approved"]
+        fields = ["id", "photo_url",  "title", "approved"]
         extra_kwargs = {
             # If you don't want users to set this field directly
             'approved': {'read_only': True},
