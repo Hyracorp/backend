@@ -281,6 +281,7 @@ class PropertyPhotoView(viewsets.ModelViewSet):
         # If you have additional fields, add them to the data dictionary
 
         # Validate and save the serializer
+        data['user'] = self.request.user
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             # Save the PropertyPhoto instance and associate it with the property
