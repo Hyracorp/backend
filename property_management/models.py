@@ -26,7 +26,7 @@ class BaseProperty(models.Model):
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPE_CHOICES)
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPE_CHOICES)
     area_sq_ft = models.FloatField()
-    floor_no = models.CharField(max_length=20)
+    floor_no = models.CharField(max_length=100)
     expected_rate_rent = models.FloatField()
     expected_deposit = models.FloatField()
     description = models.TextField()
@@ -58,7 +58,7 @@ class ResidentialProperty(BaseProperty):
     ]
 
     bhk = models.CharField(max_length=10, choices=BHK_CHOICES)
-    flat_house = models.CharField(max_length=10)
+    flat_house = models.CharField(max_length=100)
     pets_allowed = models.BooleanField()
     furnished = models.BooleanField()
     power_backup = models.BooleanField()

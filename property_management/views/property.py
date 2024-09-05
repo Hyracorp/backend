@@ -82,11 +82,13 @@ class PropertyView(APIView):
 
     def post(self, request):
         property_type = request.data.get('property_type')
+        data = request.data
+        data["user"] = request.user.id
 
         if property_type == 'Residential':
-            serializer = ResidentialPropertySerializer(data=request.data)
+            serializer = ResidentialPropertySerializer(data=data)
         elif property_type == 'Commercial':
-            serializer = CommercialPropertySerializer(data=request.data)
+            serializer = CommercialPropertySerializer(data=data)
         else:
             return Response({"error": "Invalid property_type provided."}, status=status.HTTP_400_BAD_REQUEST)
 
