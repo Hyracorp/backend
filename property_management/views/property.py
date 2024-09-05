@@ -254,7 +254,7 @@ class PropertySearchView(generics.ListAPIView):
         return context
 
 
-class PropertyPhotoViewSet(viewsets.ModelViewSet):
+class PropertyPhotoView(viewsets.ModelViewSet):
     queryset = PropertyPhoto.objects.all()
     serializer_class = PropertyPhotoSerializer
     permission_classes = [IsAuthenticated, IsLandlordOrTenantReadOnly]
