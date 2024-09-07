@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from property_management.models import ResidentialProperty, CommercialProperty, BaseProperty, BookVisit, PropertyPhoto, Amenity
 from property_management.serializers import ResidentialPropertySerializer, CommercialPropertySerializer, BasePropertySerializer, ResidentialPropertySearchSerializer, CommercialPropertySearchSerializer, BookVisitSerializer, PropertyPhotoSerializer, BasePropertySearchSerializer, BasePropertyListSerializer, AmenitySerializer
 from rest_framework.permissions import IsAuthenticated
-from user_profile.permissions import IsLandlordOrTenantReadOnly,NewIsLandlordOrTenantReadOnly
+from user_profile.permissions import IsLandlordOrTenantReadOnly, NewIsLandlordOrTenantReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -152,10 +152,13 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer_class = self.get_serializer_class()
+        user = request.user.id
+        data = request.data
+        data['user'] = user
 
         try:
             serializer = serializer_class(
-                instance, data=request.data, partial=partial)
+                instance, data=data, partial=partial)
             if serializer.is_valid():
                 self.perform_update(serializer)
                 return Response(serializer.data)
@@ -291,7 +294,6 @@ class PropertyPhotoView(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         # Handle file upload and form data in POST request
         return self.perform_create(self.get_serializer())
-
 
 
 class FeaturedPropertyView(generics.ListAPIView):
