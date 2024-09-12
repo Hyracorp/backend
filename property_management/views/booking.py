@@ -4,8 +4,9 @@ from django.utils import timezone
 from property_management.models import BookVisit
 from property_management.serializers import BookVisitSerializer, BookingListSerializer
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,time
 from rest_framework.permissions import IsAuthenticated
+
 
 
 class AvailableSlotsAPIView(generics.GenericAPIView):
@@ -46,10 +47,16 @@ class AvailableSlotsAPIView(generics.GenericAPIView):
                 date, datetime.strptime(slot, "%H:%M").time())
             slot_time = timezone.make_aware(
                 slot_time, timezone.get_current_timezone())
+
+            # Ensure slot is at least 5 hours in the future
             if slot_time - now >= timedelta(hours=5) and slot not in booked_slots:
+                # Check if it's after 5 PM today and exclude next day's 9 AM slot
+                if now.time() >= time(17, 0) and date == now.date() + timedelta(days=1) and slot == "09:00":
+                    continue
                 available_slots.append(slot)
 
         return Response({"date": date_str, "property": property_id, "available_slots": available_slots}, status=status.HTTP_200_OK)
+
 
 
 class BookVisitAPIView(generics.CreateAPIView):
