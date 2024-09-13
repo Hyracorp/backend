@@ -174,6 +174,17 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         user = request.user.id
         data = request.data
         data['user'] = user
+        BHK_CHOICES = {
+            "1 BHK": 1,
+            "2 BHK": 2,
+            "3 BHK": 3,
+            "4 BHK": 4,
+        }
+
+        # Check if it's a Residential property and adjust the BHK value if needed
+        if data.get("bhk") in BHK_CHOICES.keys():
+            # Convert the string value to an integer
+            data["bhk"] = int(BHK_CHOICES[data["bhk"]])
 
         try:
             serializer = serializer_class(
