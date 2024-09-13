@@ -82,9 +82,25 @@ class PropertyView(APIView):
 
     def post(self, request):
         property_type = request.data.get('property_type')
-        data = request.data
-        data["user"] = request.user.id
 
+        # Create a mutable copy of the request data
+        data = request.data.copy()
+        data["user"] = request.user.id  # Attach the user to the data
+
+        # Define the BHK choices mapping
+        BHK_CHOICES = {
+            "1 BHK": 1,
+            "2 BHK": 2,
+            "3 BHK": 3,
+            "4 BHK": 4,
+        }
+
+        # Check if it's a Residential property and adjust the BHK value if needed
+        if property_type == 'Residential' and data.get("bhk") in BHK_CHOICES.keys():
+            # Convert the string value to an integer
+            data["bhk"] = int(BHK_CHOICES[data["bhk"]])
+
+        # Choose the correct serializer based on the property type
         if property_type == 'Residential':
             serializer = ResidentialPropertySerializer(data=data)
         elif property_type == 'Commercial':
@@ -92,9 +108,12 @@ class PropertyView(APIView):
         else:
             return Response({"error": "Invalid property_type provided."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Validate and save the data
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # Return validation errors if any
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -187,6 +206,10 @@ class PropertySearchView(generics.ListAPIView):
         max_distance = self.request.query_params.get(
             'max_distance', 10)  # Default to 10 km
 
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        bhk = self.request.query_params.getlist('bhk')
+
         # Validate property type
         if property_type not in ['Commercial', 'Residential']:
             return Response(
@@ -200,6 +223,34 @@ class PropertySearchView(generics.ListAPIView):
         elif property_type == 'Residential':
             queryset = ResidentialProperty.objects.filter(approved=True)
 
+        # If min_price and max_price are provided, filter by price
+        if min_price or max_price:
+            try:
+                if min_price:
+                    min_price = float(min_price)
+                    queryset = queryset.filter(
+                        expected_rate_rent__gte=min_price)
+                if max_price:
+                    max_price = float(max_price)
+                    queryset = queryset.filter(
+                        expected_rate_rent__lte=max_price)
+            except ValueError:
+                return Response(
+                    {"error": "Invalid format for min_price or max_price. These should be valid float numbers."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        if bhk and property_type == 'Residential':
+            try:
+                bhk = [int(b) for b in bhk]  # Convert to integers
+                if 4 in bhk:
+                    queryset = queryset.filter(bhk__gte=4)
+                else:
+                    queryset = queryset.filter(bhk__in=bhk)
+            except ValueError:
+                return Response(
+                    {"error": "Invalid format for bhk. It should be a list of integers."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         # If latitude and longitude are provided, filter by proximity
         if lat and lon:
             try:

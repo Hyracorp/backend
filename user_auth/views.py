@@ -21,24 +21,59 @@ from .models import User
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
+
 class RegisterUserView(GenericAPIView):
     permission_classes = []
     serializer_class = UserRegisterSerializer
 
     def post(self, request):
         data = request.data
+        if data['userType'] == 'tenant':
+            data['is_landlord'] = False
+            data['is_tenant'] = True
+        elif data['userType'] == 'landlord':
+            data['is_landlord'] = True
+            data['is_tenant'] = False
+        else:
+            return Response({
+                'message': 'Invalid user type'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.serializer_class(data=data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             user = serializer.data
-            send_code_otp(user['email'])
+            send_code_otp(user['email'], user['first_name'])
             return Response({
                 'data': user,
                 'message': 'User created successfully'
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResendOTPView(GenericAPIView):
+    permission_classes = []
+
+    def post(self, request):
+        data = request.data
+        if 'email' not in data:
+            return Response({
+                'message': 'Email is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        email = data['email']
+        try:
+            user = User.objects.get(email=email)
+            if user.is_verified:
+                return Response({
+                    'message': 'User already verified'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            send_code_otp(email, user.first_name)
+            return Response({
+                'message': 'OTP sent successfully'
+            }, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            raise ValueError("Email not found in database")
 
 
 class VerifyUserView(GenericAPIView):
@@ -111,6 +146,7 @@ class LoginUserView(APIView):
 
         return res
 
+
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         # Extract the refresh token from the cookie
@@ -118,26 +154,28 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         if not refresh_token:
             return Response({"detail": "Refresh token cookie not found."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Prepare data for the serializer
         data = {'refresh': refresh_token}
-        
+
         # Use the default TokenRefreshSerializer to validate and generate a new access token
         serializer = self.get_serializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Return the new access token
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
 
 class PasswordResetRequestView(APIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = []
 
     def post(self, request: Request):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         return Response({"message": "Password reset link sent to email"}, status=status.HTTP_200_OK)
 
@@ -158,7 +196,8 @@ class PasswordResetConfirmView(APIView):
             })
         except DjangoUnicodeDecodeError as identifier:
             if not PasswordResetTokenGenerator().check_token(user, token):
-                raise AuthenticationFailed(f"The reset link is invalid {identifier}", 401)
+                raise AuthenticationFailed(
+                    f"The reset link is invalid {identifier}", 401)
 
 
 class SetNewPasswordView(APIView):

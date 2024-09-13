@@ -1,6 +1,7 @@
 
 
-from django.core.mail import EmailMessage
+# from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.core.exceptions import ObjectDoesNotExist
 import pyotp
 from .models import User, OneTimePassword
@@ -23,8 +24,8 @@ class generateKey:
         return str(email) + "Some Random Secret Key"
 
 
-def send_code_otp(email):
-    subject = "Activate your account"
+def send_code_otp(email,first_name=''):
+    subject = "Activate your Hyracorp account"
     try:
         user_instance = User.objects.get(email=email)
 
@@ -39,16 +40,66 @@ def send_code_otp(email):
     OTPModel.counter += 1
     OTPModel.save()
     if OTPModel.counter >= 5:
-        raise ValueError("You have exceeded the maximum number of otp attempts. You have been blocked from using the app")
+        raise ValueError(
+            "You have exceeded the maximum number of otp attempts. You have been blocked from using the app")
 
     keygen = generateKey()
     key = base64.b32encode(keygen.returnValue(email).encode())
     otp = pyotp.HOTP(key)
     otp_code = otp.at(OTPModel.counter)
     current_site = 'hyracorp.com'
-    email_body = f'Hi {email}, Use the code {otp_code} to activate {current_site} your account'
+    app_url='https://app.hyracorp.com'
+    # email_body = f'Hi {email}, Use the code {
+    #     otp_code} to activate {current_site} your account'
+   # HTML email content
+    email_body_html = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #333;">Hello {first_name},</h2>
+          <p style="font-size: 16px; color: #555;">
+            We received a request to activate your account on <strong>{current_site}</strong>.
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Please use the code below to complete your account activation:
+          </p>
+          <div style="text-align: center; margin: 20px 0;">
+            <p style="font-size: 24px; font-weight: bold; color: #4CAF50; border: 1px solid #4CAF50; display: inline-block; padding: 10px 20px; border-radius: 5px;">{otp_code}</p>
+            <p style="font-size: 16px; color: #555;"><a href="{app_url}/verify?email={email}&otp={otp_code}">Click here to activate your account</a></p>
+          </div>
+          <p style="font-size: 16px; color: #555;">
+            If you did not request this code, please ignore this email.
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Thank you,<br>
+            The <strong>{current_site}</strong> Team
+          </p>
+        </div>
+      </body>
+    </html>
+    """
+    # Plain text email content (fallback)
+    email_body_plaintext = f"""
+    Hi {first_name},
+
+    We received a request to activate your account on {current_site}.
+
+    Please use the code below to complete your account activation:
+
+    Your OTP Code: {otp_code}
+
+    Click here to activate your account: {app_url}/verify?email={email}&otp={otp_code}
+
+    If you did not request this code, please ignore this email.
+
+    Thank you,
+    The {current_site} Team
+    """
     from_email = settings.DEFAULT_FROM_EMAIL
-    send_email = EmailMessage(subject, email_body, from_email, [email])
+
+    send_email = EmailMultiAlternatives(subject, email_body_plaintext, from_email, [email])
+    send_email.attach_alternative(email_body_html, "text/html")
+    # send_email = EmailMessage(subject, email_body, from_email, [email])
     send_email.send(fail_silently=True)
 
 
@@ -63,7 +114,8 @@ def verify_otp(email, otp):
         raise ValueError("OTP not found in database")
 
     if otp_model.counter >= 5:
-        raise ValueError("You have exceeded the maximum number of otp attempts. Please try again after some time")
+        raise ValueError(
+            "You have exceeded the maximum number of otp attempts. Please try again after some time")
     keygen = generateKey()
     key = base64.b32encode(keygen.returnValue(email).encode())
     otpPy = pyotp.HOTP(key)
@@ -80,7 +132,8 @@ def send_transactional_email(data):
     subject = data['email_subject']
     email_body = data['email_body']
     from_email = settings.DEFAULT_FROM_EMAIL
-    send_email = EmailMessage(subject, email_body, from_email, to=[data['to_email']])
+    send_email = EmailMessage(
+        subject, email_body, from_email, to=[data['to_email']])
     send_email.send(fail_silently=False)
 
 
@@ -117,7 +170,8 @@ def registerUser(provider, email, first_name, last_name):
             auth_user = loginUser(email, password=settings.SOCIAL_AUTH_PWD)
             return auth_user
         else:
-            raise AuthenticationFailed('Please continue your login using ' + user[0].auth_provider)
+            raise AuthenticationFailed(
+                'Please continue your login using ' + user[0].auth_provider)
     else:
         newUser = {
             'email': email,

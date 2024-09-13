@@ -51,13 +51,13 @@ class BaseProperty(models.Model):
 
 class ResidentialProperty(BaseProperty):
     BHK_CHOICES = [
-        ("1 BHK", "1 BHK"),
-        ("2 BHK", "2 BHK"),
-        ("3 BHK", "3 BHK"),
-        ("4 BHK", "4 BHK"),
+        (1, "1 BHK"),
+        (2, "2 BHK"),
+        (3, "3 BHK"),
+        (4, "4 BHK"),
     ]
 
-    bhk = models.CharField(max_length=10, choices=BHK_CHOICES)
+    bhk = models.IntegerField(choices=BHK_CHOICES)
     flat_house = models.CharField(max_length=100)
     pets_allowed = models.BooleanField()
     furnished = models.BooleanField()
