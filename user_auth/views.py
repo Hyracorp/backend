@@ -27,28 +27,15 @@ class RegisterUserView(GenericAPIView):
     serializer_class = UserRegisterSerializer
 
     def post(self, request):
-        data = request.data
-        if data['userType'] == 'tenant':
-            data['is_landlord'] = False
-            data['is_tenant'] = True
-        elif data['userType'] == 'landlord':
-            data['is_landlord'] = True
-            data['is_tenant'] = False
-        else:
-            return Response({
-                'message': 'Invalid user type'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = self.serializer_class(data=data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            user = serializer.data
-            send_code_otp(user['email'], user['first_name'])
+            user = serializer.save()
+            user_data = serializer.data
+            send_code_otp(user.email, user.first_name)
             return Response({
-                'data': user,
+                'data': user_data,
                 'message': 'User created successfully'
             }, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

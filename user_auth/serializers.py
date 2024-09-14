@@ -17,10 +17,13 @@ class UserRegisterSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255, min_length=6, write_only=True)
     password2 = serializers.CharField(max_length=255, min_length=6, write_only=True)
+    is_landlord = serializers.BooleanField(required=False)
+    is_tenant = serializers.BooleanField(required=False)
+    userType = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'password', 'password2']
+        fields = ['email', 'first_name', 'last_name', 'password', 'password2', 'is_landlord', 'is_tenant', 'userType']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, attrs):
@@ -31,14 +34,26 @@ class UserRegisterSerializer(serializers.Serializer):
         email = attrs.get('email')
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError("Email already exists")
+        
+        user_type = attrs.get('userType')
+        if user_type == 'tenant':
+            attrs['is_landlord'] = False
+            attrs['is_tenant'] = True
+        elif user_type == 'landlord':
+            attrs['is_landlord'] = True
+            attrs['is_tenant'] = False
+        else:
+            raise serializers.ValidationError("Invalid user type")
+        
         return attrs
 
     def create(self, validated_data):
-        password = validated_data['password']
-        user = User.objects.create(email=validated_data['email'], first_name=validated_data['first_name'], last_name=validated_data['last_name'])
+        validated_data.pop('password2')
+        validated_data.pop('userType')
+        password = validated_data.pop('password')
+        user = User.objects.create(**validated_data)
         user.set_password(password)
         user.save()
-
         return user
 
 
