@@ -121,7 +121,7 @@ class BookVisit(models.Model):
         ("19:00", "07:00 PM"),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    property = models.ForeignKey(ResidentialProperty, on_delete=models.CASCADE)
+    property = models.ForeignKey(BaseProperty, on_delete=models.CASCADE)
     gender = models.CharField(max_length=10, choices=gender_choices)
     phone = models.CharField(max_length=13)
     date = models.DateField()

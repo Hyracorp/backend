@@ -36,29 +36,28 @@ class IsLandlordOrTenantReadOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):
         # Check if the user is authenticated
-        if request.user.is_authenticated:
-            # Allow full access for landlords
-            if request.user.is_landlord:
-                return True
-
-            # Allow read-only access for tenants (non-landlords)
-            if request.user.is_tenant and request.method in permissions.SAFE_METHODS:
-                return True
-
-            # Deny modification access for tenants
+        if not request.user.is_authenticated:
             return False
 
-        # If user is not authenticated, deny access
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        # Allow full access for landlords, but only on their own properties
+        # Allow full access for landlords
         if request.user.is_landlord:
-            return obj.user == request.user  # Only allow actions on their own properties
+            return True
 
         # Allow read-only access for tenants
         if request.user.is_tenant and request.method in permissions.SAFE_METHODS:
             return True
+
+        # Deny all other cases
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        # Allow read access for both landlords and tenants
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # For non-safe methods (PUT, PATCH, DELETE), only allow landlords on their own properties
+        if request.user.is_landlord:
+            return obj.user == request.user
 
         # Deny all other cases
         return False
