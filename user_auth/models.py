@@ -35,6 +35,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+    def save(self, *args, **kwargs):
+        # Check if the password is already hashed
+        if self.pk is None or 'pbkdf2_' not in self.password:
+            self.password = make_password(self.password)
+        super(User, self).save(*args, **kwargs)
+
     @property
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
