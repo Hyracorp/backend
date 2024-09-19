@@ -56,20 +56,40 @@ class BasePropertySerializer(serializers.ModelSerializer):
 
 class ResidentialPropertySerializer(BasePropertySerializer):
     photos = PropertyPhotoSerializer(many=True, read_only=True)
-    amenities = AmenitySerializer(many=True, read_only=True)
+    amenities = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Amenity.objects.all(),
+        required=False
+    )
 
     class Meta(BasePropertySerializer.Meta):
         model = ResidentialProperty
         fields = "__all__"
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['amenities'] = AmenitySerializer(
+            instance.amenities.all(), many=True).data
+        return representation
+
 
 class CommercialPropertySerializer(BasePropertySerializer):
     photos = PropertyPhotoSerializer(many=True, read_only=True)
-    amenities = AmenitySerializer(many=True, read_only=True)
+    amenities = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Amenity.objects.all(),
+        required=False
+    )
 
     class Meta(BasePropertySerializer.Meta):
         model = CommercialProperty
         fields = "__all__"
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['amenities'] = AmenitySerializer(
+            instance.amenities.all(), many=True).data
+        return representation
 
 
 class ResidentialPropertySearchSerializer(serializers.ModelSerializer):
