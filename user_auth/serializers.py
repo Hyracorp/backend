@@ -47,13 +47,11 @@ class UserRegisterSerializer(serializers.Serializer):
             attrs['is_tenant'] = False
         else:
             raise serializers.ValidationError("Invalid user type")
-
         return attrs
 
     def create(self, validated_data):
         validated_data.pop('password2')
-        user_type = validated_data.pop('userType')
-        validated_data.pop('userType')
+        user_type = validated_data.pop('userType', None)
         password = validated_data.pop('password')
         user = User.objects.create(**validated_data)
         user.set_password(password)
