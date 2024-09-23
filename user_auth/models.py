@@ -1,9 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.contrib.auth.models import Group
 from .manager import UserManager
-
+from django.contrib.auth.hashers import make_password
 # Create your models here.
 
 
@@ -25,7 +25,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_landlord = models.BooleanField(default=False)
     is_tenant = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    auth_provider = models.CharField(max_length=255, blank=False, null=False, choices=AUTH_PROVIDERS.items(), default='email')
+    auth_provider = models.CharField(
+        max_length=255, blank=False, null=False, choices=AUTH_PROVIDERS.items(), default='email')
 
     USERNAME_FIELD = 'email'
 
@@ -51,6 +52,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
+
+    def add_to_group(self, group_name):
+        group = Group.objects.get(name=group_name)
+        self.groups.add(group)
 
 
 class OneTimePassword(models.Model):

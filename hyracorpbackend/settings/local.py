@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "property_management",
     "user_auth",
     "user_profile",
+    "notifications",
 ]
 
 MIDDLEWARE = [
