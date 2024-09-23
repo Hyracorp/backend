@@ -4,9 +4,9 @@ from django.utils import timezone
 from property_management.models import BookVisit
 from property_management.serializers import BookVisitSerializer, BookingListSerializer
 from django.utils import timezone
-from datetime import datetime, timedelta,time
+from datetime import datetime, timedelta, time
 from rest_framework.permissions import IsAuthenticated
-
+from notifications.utils import create_user_notification
 
 
 class AvailableSlotsAPIView(generics.GenericAPIView):
@@ -58,13 +58,14 @@ class AvailableSlotsAPIView(generics.GenericAPIView):
         return Response({"date": date_str, "property": property_id, "available_slots": available_slots}, status=status.HTTP_200_OK)
 
 
-
 class BookVisitAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = BookVisitSerializer
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, visit_status="Pending")
+        create_user_notification(self.request.user, "booking_request",
+                                 "Your booking request has been received. Please wait for approval.", '/tenant/bookings')
 
 
 class BookVisitListAPIView(generics.ListAPIView):
