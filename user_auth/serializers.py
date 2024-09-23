@@ -78,26 +78,23 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
-
         if not User.objects.filter(email=email).exists():
-            raise serializers.ValidationError(
-                "User with this email does not exist")
-            return attrs
+            raise serializers.ValidationError("User with this email does not exist")
+        
         user = User.objects.get(email=email)
         uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
         token = PasswordResetTokenGenerator().make_token(user)
         request = self.context['request']
         site_domain = get_current_site(request).domain
-
         relative_link = reverse('password-reset-confirm',
                                 kwargs={'uidb64': uidb64, 'token': token})
         abs_link = f"https://{site_domain}{relative_link}"
-        email_body = f"Hello, \n Use the link below to reset your password \n {
-            abs_link}"
-        data = {'to_email': user.email,
-                'email_subject': 'Reset your password',
-                'email_body': email_body, }
-
+        email_body = f"Hello,\nUse the link below to reset your password\n{abs_link}"
+        data = {
+            'to_email': user.email,
+            'email_subject': 'Reset your password',
+            'email_body': email_body,
+        }
         send_transactional_email(data)
         return attrs
 
