@@ -22,4 +22,5 @@ urlpatterns = [
     path("api/v1/auth/", include("user_auth.urls")),
     path("api/v1/profile/", include("user_profile.urls")),
     path("api/v1/property/", include("property_management.urls")),
+    path("api/v1/notifications/", include("notifications.urls")),
 ]
